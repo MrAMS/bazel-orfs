@@ -632,7 +632,7 @@ def _config_content(ctx, arguments, paths):
     defines_for_stage = {
         var: value
         for var, value in ctx.var.items()
-        if var in ALL_STAGE_TO_VARIABLES[ctx.attr._stage]
+        if var in ALL_STAGE_TO_VARIABLES.get(ctx.attr._stage, [])
     }
     return "".join(
         sorted(["export {}?={}\n".format(*pair) for pair in (arguments | defines_for_stage).items()]) +
@@ -1726,6 +1726,12 @@ ORFS_VARIABLE_TO_STAGES = {
     for k, v in orfs_variable_metadata.items()
     if "stages" in v and "All stages" not in v["stages"]
 }
+
+# CLOCK_PERIOD: Clock period in picoseconds for SDC timing constraints
+# Useful for DSE (Design Space Exploration) to sweep frequency targets
+# You can `set clk_period $env(CLOCK_PERIOD)` in your sdc
+# and can be overridden via: bazel build --define=CLOCK_PERIOD=<value_in_ps> ...
+ORFS_VARIABLE_TO_STAGES["CLOCK_PERIOD"] = ["synth", "floorplan", "place", "cts", "grt", "route", "final"]
 
 # Stages that do not appear in variables.yaml must be added manually here
 ALL_STAGES = set(
